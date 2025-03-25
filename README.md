@@ -10,9 +10,9 @@ SIREN is a comprehensive toolset for designing RNA interference (RNAi) sequences
 - [Requirements](#requirements)
 - [Usage](#usage)
 - [Pipeline Overview](#pipeline-overview)
-  - [siRNA Generation and Off‑target Evaluation](#sirna-generation-and-off-target-evaluation)
-  - [Off‑target Visualization](#off-target-visualization)
-  - [RNAi Design and Primer Design](#rnai-design-and-primer-design)
+  - [siRNA Generation and Off‑target Evaluation](#sirna-generation-and-offtarget-evaluation)
+  - [Off‑target Visualization](#offtarget-visualization)
+  - [RNAi Selection and Primer Design](#rnai-selection-and-primer-design)
 - [License](#license)
 - [Citations](#citations)
 
@@ -36,8 +36,9 @@ This command installs SIREN along with all required dependencies.
 ## Requirements
 
 - **Python 3.x**
+- **pip**: For installing Python packages when needed.
 - **Mamba/Conda:** For installation from Bioconda.
-- **RNAhybrid:** Must be installed and available in your system PATH.
+- **RNAhybrid:** Evaluates off‑target interactions.
 - **Primer3:** Required for primer design.
 - **BioPython:** For sequence processing.
 - **Matplotlib:** For generating visualizations.
@@ -67,7 +68,7 @@ SIREN --targets <FASTA file> --gene <gene_name> [--threads <number>] [--sensitiv
 SIREN --targets TAIR10_cdna.fasta --gene AT1G50920 --threads 12 --sensitivity medium --rnai_length 300 --outdir results_AT1G50920
 ```
 
-This command runs the complete SIREN pipeline for the gene `AT1G50920` from the provided FASTA file, using 12 threads and a base RNAi length of 300 nucleotides, storing results in the `results_AT1G50920` directory.
+This command runs the complete SIREN pipeline for the gene `AT1G50920` from the provided Arabidopsis cds FASTA file, using 12 threads and a base RNAi length of 300 nucleotides, storing results in the `results_AT1G50920` directory.
 
 ## Pipeline Overview
 
@@ -90,11 +91,11 @@ The `siren_plotIV.py` module:
   - A blue line for the count of off‑target events per nucleotide position.
 - **Output:** Saves the plot (e.g., `Off_targets_across_the_gene.png`).
 
-### RNAi Design and Primer Design
+### RNAi Selection and Primer Design
 
 The `siren_designVIII.py` module:
 - **RNAi Sequence Generation:** Creates RNAi sequences with lengths from (base length - 50) to (base length + 100) in steps of 50.
-- **Scoring:** Assigns scores based on off‑target penalties.
+- **Scoring:** RNAi sequences are penalized for containing siRNAs with off-target potential. Each unique siRNA contributing to off-targets reduces the score slightly. However, if multiple off-targets are caused by the same siRNA within a given RNAi sequence, a strong penalty is applied. This discourages designs that repeatedly include problematic siRNAs, improving overall targeting specificity.
 - **Primer Design:** Utilizes Primer3 to design primer pairs and calculates expected amplicon sizes.
 - **Output:** Generates a TSV file (`rna_sequences_with_scores_and_primers.tsv`) with RNAi sequences, scores, primer details, and expected amplicon sizes.
 
@@ -104,9 +105,10 @@ SIREN is released under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html
 
 ## Citations
 
-If you use SIREN in your research or projects, please cite the following tools and libraries:
+If you use **SIREN** in your research or projects, please cite the following tools and resources:
 
-- RNAhybrid – for off‑target evaluation.
-- Primer3 – for primer design.
+- **SIREN** – please cite this GitHub repository (a paper is not yet available).
+- **RNAhybrid** – Rehmsmeier, M., Steffen, P., Höchsmann, M., & Giegerich, R. (2004). Fast and effective prediction of microRNA/target duplexes. *RNA*, 10(10), 1507–1517.
+
 
 For any issues, feature requests, or further questions, please open an issue on GitHub. Happy RNAi designing!
