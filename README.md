@@ -65,7 +65,7 @@ SIREN --targets <FASTA file> --gene <gene_name> [--threads <number>] [--sensitiv
 ### Example:
 
 ```bash
-SIREN --targets TAIR10_cdna.fasta --gene AT1G50920 --threads 12 --sensitivity medium --rnai_length 300 --outdir results_AT1G50920
+SIREN --targets TAIR10_cdna.fasta --gene AT1G50920 --threads 12 --rnai_length 300 --outdir results_AT1G50920
 ```
 
 This command runs the complete SIREN pipeline for the gene `AT1G50920` from the provided Arabidopsis cds FASTA file, using 12 threads and a base RNAi length of 300 nucleotides, storing results in the `results_AT1G50920` directory.
