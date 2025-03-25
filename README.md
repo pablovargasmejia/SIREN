@@ -25,10 +25,17 @@ SIREN is a comprehensive toolset for designing RNA interference (RNAi) sequences
 
 ## Installation
 
-SIREN is available on Bioconda. Install it using mamba:
+First install RNAhybrid which is available on Bioconda. Install it using mamba:
 
 ```bash
-mamba install bioconda::siren
+    mamba install bioconda::rnahybrid
+    # or
+    conda install bioconda::rnahybrid
+```
+SIREN is available on PyPi. Install it using pip:
+
+```bash
+    pip install siren-rnai
 ```
 
 This command installs SIREN along with all required dependencies.
@@ -107,7 +114,7 @@ SIREN is released under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html
 
 If you use **SIREN** in your research or projects, please cite the following tools and resources:
 
-- **SIREN** – please cite this GitHub repository (a paper is not yet available).
+- **SIREN** – please cite this GitHub repository.
 - **RNAhybrid** – Rehmsmeier, M., Steffen, P., Höchsmann, M., & Giegerich, R. (2004). Fast and effective prediction of microRNA/target duplexes. *RNA*, 10(10), 1507–1517.
 
 
