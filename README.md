@@ -40,6 +40,24 @@ SIREN is available on PyPi. Install it using pip:
 
 This command installs SIREN along with all required dependencies.
 
+### Apple Silicon Installation
+
+If you're on a Mac with Apple Silicon, follow these steps to install SIREN in a clean and compatible environment:
+
+```bash
+# 1. Create and activate a new environment with Python 3.12
+mamba create -n osx64_env python=3.12.9 -y
+mamba activate osx64_env
+
+# 2. Install RNAhybrid from bioconda
+mamba install -c bioconda rnahybrid -y
+
+# 3. Install SIREN
+pip install siren-rnai
+```
+
+You can now use `SIREN` from the command line inside this environment.
+
 ## Requirements
 
 - **Python 3.x**
