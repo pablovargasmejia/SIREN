@@ -1,0 +1,16 @@
+LICENSE
+MANIFEST.in
+README.md
+setup.py
+src/siren_rnai/__init__.py
+src/siren_rnai/sirenXII.py
+src/siren_rnai/siren_designVIII.py
+src/siren_rnai/siren_masterV.py
+src/siren_rnai/siren_plotIV.py
+src/siren_rnai/siren_prefilter.py
+src/siren_rnai.egg-info/PKG-INFO
+src/siren_rnai.egg-info/SOURCES.txt
+src/siren_rnai.egg-info/dependency_links.txt
+src/siren_rnai.egg-info/entry_points.txt
+src/siren_rnai.egg-info/requires.txt
+src/siren_rnai.egg-info/top_level.txt
