@@ -10,7 +10,7 @@ SIREN is a comprehensive toolset for designing RNA interference (RNAi) sequences
 - [Requirements](#requirements)
 - [Usage](#usage)
 - [Pipeline Overview](#pipeline-overview)
-  - [Prefilter (alignment-free k-mer screen)] (#prefilter-alignment-free-k-mer-screen)
+  - [Prefilter alignment-free k-mer screen] (#prefilter-alignment-free-k-mer-screen)
   - [siRNA Generation and Off‑target Evaluation](#sirna-generation-and-offtarget-evaluation)
   - [Off‑target Visualization](#offtarget-visualization)
   - [RNAi Selection and Primer Design](#rnai-selection-and-primer-design)
@@ -121,7 +121,7 @@ This command runs the complete SIREN pipeline for the gene `AT1G50920` from the 
 
 ## Pipeline Overview
 
-### Prefilter (alignment-free k-mer screen)
+### Prefilter alignment-free k-mer screen
 
 The `siren_prefilter.py` module:
 
