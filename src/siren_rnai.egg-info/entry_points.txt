@@ -1,2 +1,0 @@
-[console_scripts]
-SIREN = siren_rnai.siren_masterV:main
