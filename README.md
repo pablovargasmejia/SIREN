@@ -10,6 +10,7 @@ SIREN is a comprehensive toolset for designing RNA interference (RNAi) sequences
 - [Requirements](#requirements)
 - [Usage](#usage)
 - [Pipeline Overview](#pipeline-overview)
+  - [Prefilter (alignment-free k-mer screen)] (#Prefilter-(alignment-free-k-mer screen))
   - [siRNA Generation and Off‑target Evaluation](#sirna-generation-and-offtarget-evaluation)
   - [Off‑target Visualization](#offtarget-visualization)
   - [RNAi Selection and Primer Design](#rnai-selection-and-primer-design)
@@ -79,13 +80,36 @@ SIREN --targets <FASTA file> --gene <gene_name> [--threads <number>] [--sensitiv
 
 ### Options:
 
-- **`--targets <FASTA file>`**: Path to the FASTA file containing organism cDNA sequences.
-- **`--gene <gene_name>`**: Gene name (or partial FASTA header) used to uniquely identify the target gene.
-- **`--threads <number>`**: Number of threads for parallel processing (default: 6).
-- **`--sensitivity {high,medium,low}`**: Sensitivity level for siRNA generation; controls the step size for candidate siRNA generation (default: low).
-- **`--rnai_length <length>`**: Base RNAi sequence length to guide sequence generation (default: 200).
-- **`--outdir <output_directory>`**: Directory where all output files will be stored (default: `siren_results`).
-- **`--min_align_length <length>`**: (Optional) Minimum alignment length for off‑target detection.
+**Required:**
+- `--targets <FASTA>`: FASTA containing organism cDNA sequences.
+- `--gene <STRING>`: Gene name or a substring of the FASTA header to select the target.
+
+**Common options (exact flags as in the script):**
+- `--threads <INT>`: Parallelism for heavy steps (default: 8).
+- `--sensitivity {high,medium}`: Pipeline sensitivity (default: `medium`).
+- `--rnai_length <INT>`: RNAi region length used downstream (default: 200).
+- `--sirna_size <INT>`: siRNA length (default: 21).
+- `--min_align_length <INT>`: Minimum alignment length filter for off‑target detection (optional).
+- `--outdir <DIR>`: Output directory (default: `siren_results`).
+
+**Prefilter controls (alignment‑free k‑mer screen; optional):**
+- `-X, --no_prefilter`: Skip the prefilter step and run on the full database.
+- `-m, --prefilter_mode {set,windowed}`: Prefilter mode (default: `windowed`).
+- `-s, --prefilter_strand {rc,fwd,both}`: Strand used for seeding (default: `rc`).
+- `-k, --prefilter_seed_k <INT>`: Seed k‑mer length for windowed mode (default: 9).
+- `-w, --prefilter_window_size <INT>`: Window size for density criterion (default: 40).
+- `-H, --prefilter_min_window_hits <INT>`: Minimum seed hits in a window (default: 2).
+- `-L, --prefilter_write_log` / `-N, --no_prefilter_write_log`: Toggle writing a TSV log (`prefilter_log.tsv`).
+
+**Visualization:**
+- `-g_o, --graphical_output`: Also run `siren_plotIV.py` to produce the off‑target plot.
+
+**Pass‑through to RNAhybrid (placed **last**):**
+- `-R, --rnahybrid_options ...`: Any extra flags forwarded directly to `RNAhybrid`.
+  - Example from the script help:
+    ```
+    -R -e -25 -v 0 -u 0 -f 2,7 -p 0.01 -d 0.5,0.1 -m 60000
+    ```
 
 ### Example:
 
@@ -97,11 +121,25 @@ This command runs the complete SIREN pipeline for the gene `AT1G50920` from the 
 
 ## Pipeline Overview
 
+### Prefilter (alignment-free k-mer screen)
+
+The `siren_prefilter.py` module:
+
+- **Purpose:** Rapidly shrink the RNAhybrid search space by keeping only sequences likely to be similar to the target **without full alignments**.
+- **Two modes (from the code):**
+  - **`set` mode (module default):** Compares **distinct k-mer sets** between each candidate sequence and the target using Dice/Jaccard/containment-style similarities.
+  - **`windowed` mode (pipeline default in `siren_masterV.py`):** Retains a sequence if there are **≥ H reverse-complement seed hits** (exact k-mers) within any **W-bp window**. Pipeline defaults: **`k=9`**, **`W=40`**, **`H=2`**.
+- **Strand control:** Seeds can be taken from **`rc`**, **`fwd`**, or **`both`** strands (pipeline default: **`rc`**).
+- **Logging (optional):** When enabled, writes a per-record metrics table to **`prefilter_log.tsv`**.
+- **Output:** Writes the filtered database to **`targets_prefiltered.fa`** (in the specified output directory).
+- **Integration with the pipeline:** Enabled by default via `siren_masterV.py`; can be **skipped** with the top-level flag **`--no_prefilter`** to run RNAhybrid on the full database.
+
 ### siRNA Generation and Off‑target Evaluation
 
 The `sirenXII.py` module:
 - **Target Extraction:** Searches the provided FASTA for the specified gene and extracts a unique target sequence.
 - **siRNA Generation:** Generates siRNAs (typically 21 nucleotides) using a sensitivity-dependent step size.
+
 - **Off‑target Evaluation:** Evaluates off‑target interactions via RNAhybrid on sequences not matching the target.
 - **Parallel Processing:** Splits off‑target data into chunks for parallel processing.
 - **Output Files:** Produces files such as `target.fa` and `off_targets_summary.tsv` for downstream steps.
@@ -132,8 +170,9 @@ SIREN is released under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html
 
 If you use **SIREN** in your research or projects, please cite the following tools and resources:
 
-- **SIREN** – please cite this GitHub repository.
+- **SIREN** – Vargas Mejía, P., & Vega-Arreguín, J. C. (2025). SIREN: Suite for Intelligent RNAi Design and Evaluation of Nucleotide Sequences. bioRxiv. https://doi.org/10.1101/2025.05.26.656188.
 - **RNAhybrid** – Rehmsmeier, M., Steffen, P., Höchsmann, M., & Giegerich, R. (2004). Fast and effective prediction of microRNA/target duplexes. *RNA*, 10(10), 1507–1517.
 
 
 For any issues, feature requests, or further questions, please open an issue on GitHub. Happy RNAi designing!
+
