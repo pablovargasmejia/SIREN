@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="siren-rnai",
-    version="0.1.5",
+    version="0.1.6",
     author="Pablo Vargas Mejia",
     author_email="",
     description="SIREN: Suite for Intelligent RNAi design and Evaluation of Nucleotide sequences",
@@ -25,7 +25,9 @@ setup(
         "tqdm",
         "primer3-py",
         "matplotlib",
-        "numpy"
+        "numpy",
+        "seaborn",       
+        "scipy"
     ],
     entry_points={
     "console_scripts": [
