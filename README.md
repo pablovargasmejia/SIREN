@@ -75,7 +75,7 @@ You can now use `SIREN` from the command line inside this environment.
 Run SIREN using the command-line interface as shown below. The options are as follows:
 
 ```bash
-SIREN --targets <FASTA file> --gene <gene_name> [--threads <number>] [--sensitivity {high,medium,low}] [--rnai_length <length>] [--outdir <output_directory>] [--min_align_length <length>]
+SIREN --targets <FASTA file> --gene <gene_name> [--threads <number>] [--sensitivity {high,medium}] [--rnai_length <length>] [--outdir <output_directory>] [--min_align_length <length>]
 ```
 
 ### Options:
@@ -86,7 +86,7 @@ SIREN --targets <FASTA file> --gene <gene_name> [--threads <number>] [--sensitiv
 
 **Common options (exact flags as in the script):**
 - `--threads <INT>`: Parallelism for heavy steps (default: 8).
-- `--sensitivity {high,medium}`: Pipeline sensitivity (default: `medium`).
+- `--sensitivity {high,medium}`: Pipeline sensitivity (default: `high`).
 - `--rnai_length <INT>`: RNAi region length used downstream (default: 200).
 - `--sirna_size <INT>`: siRNA length (default: 21).
 - `--min_align_length <INT>`: Minimum alignment length filter for off‑target detection (optional).
