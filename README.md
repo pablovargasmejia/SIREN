@@ -46,9 +46,10 @@ This command installs SIREN along with all required dependencies.
 If you're on a Mac with Apple Silicon, follow these steps to install SIREN in a clean and compatible environment:
 
 ```bash
-# 1. Create and activate a new environment with Python 3.12
-mamba create -n osx64_env python=3.12.9 -y
-mamba activate osx64_env
+# 1. Create and activate a new x86_64 (osx-64) environment
+CONDA_SUBDIR=osx-64 mamba create -n siren_env -c conda-forge -c bioconda python=3.12 -y
+mamba activate siren_env
+conda config --env --set subdir osx-64
 
 # 2. Install RNAhybrid from bioconda
 mamba install -c bioconda rnahybrid -y
