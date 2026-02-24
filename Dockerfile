@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir siren-rnai==0.1.9
 WORKDIR /data
 
 # Make the container run like a native executable
-ENTRYPOINT ["siren-rnai"]
+ENTRYPOINT ["SIREN"]
 
 # If no arguments are passed, display the help menu
 CMD ["--help"]
