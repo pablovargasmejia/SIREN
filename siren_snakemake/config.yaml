@@ -1,0 +1,29 @@
+targets: "minidb.fasta"
+gene: "AT1G50920"
+outdir: "results_AT1G50920"
+
+# match SIREN defaults unless you want to expose them
+sirna_size: 21
+sensitivity: "high"
+min_align_length: 17   # default is sirna_size - 4
+
+# shard count controls cluster parallelism
+# (rule of thumb: 100–1000 shards for big transcriptomes; start with 200)
+num_shards: 200
+
+# optional: run SIREN prefilter before RNAhybrid to shrink the db
+use_prefilter: true
+prefilter_mode: "windowed"
+prefilter_strand: "rc"
+prefilter_seed_k: 9
+prefilter_window_size: 40
+prefilter_min_window_hits: 2
+prefilter_write_log: true
+
+# pass-through RNAhybrid options (same idea as SIREN -R / --rnahybrid_options)
+# keep empty to use SIREN defaults:
+rnahybrid_options: ["-e","-25","-v","0","-u","0","-f","2,7","-p","0.01","-d","0.5,0.1","-m","60000"]
+
+# downstream steps
+rnai_length: 200
+make_plot: true

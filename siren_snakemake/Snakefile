@@ -1,0 +1,243 @@
+# Snakefile (FULL, carefully fixed)
+
+import os
+from snakemake.io import glob_wildcards
+
+configfile: "config.yaml"
+
+OUTDIR = config["outdir"]
+OTHER  = os.path.join(OUTDIR, "other_files")
+SHARDS = os.path.join(OUTDIR, "shards")
+RHOUT  = os.path.join(OUTDIR, "rnahybrid")
+
+RNOPT = " ".join(config.get("rnahybrid_options", []))
+
+# --- Checkpoint helper: discover which shard FASTAs were actually created ---
+def get_shard_ids(wildcards):
+    ck = checkpoints.split_fasta.get()
+    pattern = os.path.join(ck.output[0], "sequences_split_{i}.fa")
+    return glob_wildcards(pattern).i
+
+
+rule all:
+    input:
+        os.path.join(OUTDIR, "off_targets_summary.tsv"),
+        os.path.join(OTHER, "target_results.txt"),
+        os.path.join(OUTDIR, "rna_sequences_with_scores.tsv"),
+        os.path.join(OUTDIR, "Off_targets_across_the_gene.png") if config["make_plot"] else []
+
+
+rule prefilter:
+    input:
+        targets=config["targets"]
+    output:
+        filtered=os.path.join(OUTDIR, "targets_prefiltered.fa")
+    conda:
+        "envs/siren.yaml"
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {OUTDIR}
+
+        if [ "{config[use_prefilter]}" = "true" ]; then
+          # Ensure package is present in env (informative; won't crash if import path differs)
+          python -m pip show siren-rnai >/dev/null
+
+          # (Optional) quick sanity for target existence; prepare_inputs will also validate gene
+          python scripts/prepare_inputs.py --targets {input.targets} --gene "{config[gene]}" \
+            --sirna_size {config[sirna_size]} --sensitivity {config[sensitivity]} --outdir {OUTDIR}
+
+          # Run your vendored SIREN prefilter script.
+          python - <<'PY'
+import os, sys, subprocess
+
+outdir = "{OUTDIR}"
+targets = "{input.targets}"
+gene = "{config[gene]}"
+mode = "{config[prefilter_mode]}"
+strand = "{config[prefilter_strand]}"
+seed_k = "{config[prefilter_seed_k]}"
+win = "{config[prefilter_window_size]}"
+hits = "{config[prefilter_min_window_hits]}"
+write_log = "{config[prefilter_write_log]}".lower() == "true"
+
+cmd = [sys.executable, "scripts/siren_prefilter.py",
+       "--targets", targets,
+       "--gene", gene,
+       "--outdir", outdir,
+       "--strand", strand]
+
+if mode == "windowed":
+    cmd += ["--mode","windowed",
+            "--seed_k", str(seed_k),
+            "--window_size", str(win),
+            "--min_window_hits", str(hits)]
+else:
+    cmd += ["--mode","set"]
+
+if write_log:
+    cmd += ["--write_log"]
+
+subprocess.run(cmd, check=True)
+PY
+          # Ensure the expected output exists and is non-empty.
+          test -s {output.filtered}
+        else
+          cp {input.targets} {output.filtered}
+        fi
+        """
+
+
+rule prepare_inputs:
+    input:
+        targets = rules.prefilter.output.filtered
+    output:
+        target = os.path.join(OTHER, "target.fa"),
+        seqs   = os.path.join(OTHER, "sequences.fa"),
+        sirnas = os.path.join(OUTDIR, "sirnas.fa")
+    conda:
+        "envs/siren.yaml"
+    shell:
+        r"""
+        set -euo pipefail
+        python scripts/prepare_inputs.py \
+          --targets {input.targets} --gene "{config[gene]}" \
+          --sirna_size {config[sirna_size]} --sensitivity {config[sensitivity]} \
+          --outdir {OUTDIR}
+        """
+
+
+# --- KEY FIX: checkpoint so Snakemake can discover the actual shard files produced at runtime ---
+checkpoint split_fasta:
+    input:
+        rules.prepare_inputs.output.seqs
+    output:
+        directory(SHARDS)
+    conda:
+        "envs/siren.yaml"
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {SHARDS}
+        python scripts/split_fasta_balanced.py \
+          --input {input} --outdir {SHARDS} --num_shards {config[num_shards]}
+        """
+
+
+rule rnahybrid_shard:
+    input:
+        shard=lambda wc: os.path.join(
+            checkpoints.split_fasta.get().output[0],
+            f"sequences_split_{wc.i}.fa"
+        ),
+        sirnas=rules.prepare_inputs.output.sirnas
+    output:
+        os.path.join(RHOUT, "shard_{i}.txt")
+    threads: 1
+    conda:
+        "envs/siren.yaml"
+    resources:
+        mem_mb=4000,
+        time_min=60
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {RHOUT}
+        python scripts/run_rnahybrid_one_shard.py \
+          --targets_shard {input.shard} --sirnas {input.sirnas} \
+          --out {output} --opts {RNOPT}
+        """
+
+
+rule merge_rnahybrid:
+    input:
+        lambda wc: expand(
+            os.path.join(RHOUT, "shard_{i}.txt"),
+            i=get_shard_ids(wc)
+        )
+    output:
+        os.path.join(OTHER, "all_targets.txt")
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {OTHER}
+        cat {input} > {output}
+        """
+
+
+rule parse_and_summarize:
+    input:
+        all_targets = rules.merge_rnahybrid.output
+    output:
+        results = os.path.join(OUTDIR, "off_targets_results.txt"),
+        summary = os.path.join(OUTDIR, "off_targets_summary.tsv")
+    conda:
+        "envs/siren.yaml"
+    shell:
+        r"""
+        set -euo pipefail
+        python scripts/parse_and_summarize.py \
+          --all_targets {input.all_targets} \
+          --sirna_size {config[sirna_size]} \
+          --min_align_length {config[min_align_length]} \
+          --off_targets_results {output.results} \
+          --off_targets_summary {output.summary}
+        """
+
+
+rule target_efficiency:
+    input:
+        target = rules.prepare_inputs.output.target,
+        sirnas = rules.prepare_inputs.output.sirnas
+    output:
+        os.path.join(OTHER, "target_results.txt")
+    conda:
+        "envs/siren.yaml"
+    shell:
+        r"""
+        set -euo pipefail
+        # target.fa vs sirnas.fa (single job)
+        RNAhybrid -t {input.target} -q {input.sirnas} {RNOPT} > {output}
+        """
+
+
+rule plot:
+    input:
+        fasta = rules.prepare_inputs.output.target,
+        tsv   = rules.parse_and_summarize.output.summary
+    output:
+        os.path.join(OUTDIR, "Off_targets_across_the_gene.png")
+    conda:
+        "envs/siren.yaml"
+    shell:
+        r"""
+        set -euo pipefail
+        python - <<'PY'
+import sys, subprocess
+subprocess.run([sys.executable, "scripts/siren_plotIV.py",
+                "--fasta", "{input.fasta}",
+                "--input", "{input.tsv}",
+                "--out", "{output}"], check=True)
+PY
+        """
+
+
+rule design:
+    input:
+        fasta = rules.prepare_inputs.output.target,
+        tsv   = rules.parse_and_summarize.output.summary
+    output:
+        os.path.join(OUTDIR, "rna_sequences_with_scores.tsv")
+    conda:
+        "envs/siren.yaml"
+    threads: 4
+    shell:
+        r"""
+        set -euo pipefail
+        python scripts/siren_designVIII.py \
+          --target_path {input.fasta} \
+          --off_targets_summary_path {input.tsv} \
+          --rnai_seq_length {config[rnai_length]} \
+          --threads {threads} \
+          --out {output}
+        """

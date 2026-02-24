@@ -1,0 +1,22 @@
+cexecutor: slurm
+jobs: 200
+use-conda: true
+latency-wait: 60
+printshellcmds: true
+
+default-resources:
+  - mem_mb=4000
+  - time_min=60
+
+set-resources:
+  rnahybrid_shard:
+    mem_mb: 8000
+    time_min: 120
+  design:
+    mem_mb: 8000
+    time_min: 60
+
+# Example SLURM settings (edit to your cluster):
+slurm:
+  account: "YOUR_ACCOUNT"
+  partition: "compute"

@@ -1,0 +1,19 @@
+name: siren_workflow
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - rnahybrid
+  - snakemake
+  - pip
+  - pip:
+      - siren-rnai==0.1.7
+      - biopython
+      - pandas
+      - tqdm
+      - numpy
+      - scipy
+      - matplotlib
+      - seaborn
+      - primer3-py
