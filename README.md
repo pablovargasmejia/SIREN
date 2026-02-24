@@ -49,14 +49,6 @@ mamba install -c conda-forge -c bioconda rnahybrid
 pip install siren-rnai
 ```
 
-**Cluster/HPC optional dependencies (same SIREN, adds Parsl):**
-
-```bash
-pip install "siren-rnai[cluster]"
-```
-
-> `siren-rnai[cluster]` installs the same package plus optional cluster dependencies needed for Slurm execution (Parsl). The `SIREN` command is unchanged.
-
 #### Apple Silicon Installation
 
 If you're on a Mac with Apple Silicon, this is a safe and compatible setup:
