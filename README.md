@@ -67,22 +67,20 @@ pip install siren-rnai
 
 ### Docker
 
-A Dockerfile is provided to run SIREN reproducibly without installing dependencies on the host.
+A `Dockerfile` is provided to run SIREN reproducibly without installing dependencies on your host machine.
 
-**Build:**
-
+**1. Download the repository and build the image:**
 ```bash
+git clone https://github.com/pablovargasmejia/SIREN.git
+cd SIREN
 docker build -t siren-rnai:latest .
 ```
 
 **Run:**
 
 ```bash
-docker run --rm -it \
-  -v "$PWD":/work \
-  -w /work \
-  siren-rnai:latest \
-  SIREN --targets your_db.fa --gene YOUR_GENE --outdir siren_results --threads 12
+docker run --rm -v "$PWD":/data siren-rnai:latest \
+  --targets your_db.fa --gene YOUR_GENE --outdir siren_results --threads 12
 ```
 
 Notes:
