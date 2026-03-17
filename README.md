@@ -54,15 +54,8 @@ pip install siren-rnai
 If you're on a Mac with Apple Silicon, this is a safe and compatible setup:
 
 ```bash
-# 1) Create and activate a new environment with Python 3.12
-mamba create -n osx64_env python=3.12.9 -y
-mamba activate osx64_env
-
-# 2) Install RNAhybrid from bioconda
-mamba install -c conda-forge -c bioconda rnahybrid -y
-
-# 3) Install SIREN
-pip install siren-rnai
+CONDA_SUBDIR=osx-64 mamba create -n siren_x64 -c conda-forge -c bioconda --strict-channel-priority python=3.12.9 bioconda::rnahybrid bioconda::siren-rnai -y
+mamba activate siren_x64
 ```
 
 ### Docker
